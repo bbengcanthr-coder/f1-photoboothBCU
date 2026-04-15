@@ -1,126 +1,223 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Photo Frame Studio</title>
+    <title>F1 Grand Prix Photo Frames</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --f1-red: #e10600;
-            --f1-black: #15151e;
+            --dark-bg: #0b0b0b;
+            --card-bg: #1f1f1f;
+            --text-white: #ffffff;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; text-align: center; margin: 0; padding: 20px; }
-        h1 { color: var(--f1-red); text-transform: uppercase; letter-spacing: 2px; }
-        
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* สไตล์ส่วนจัดการรูป */
-        #canvas-container { position: relative; display: inline-block; margin-top: 20px; border: 5px solid var(--f1-black); line-height: 0; }
-        canvas { max-width: 100%; height: auto; background: #eee; }
 
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button, label { background: var(--f1-black); color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: var(--f1-red); }
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            color: var(--f1-red);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            margin-bottom: 40px;
+            opacity: 0.7;
+        }
+
+        .section-title {
+            width: 100%;
+            max-width: 1200px;
+            border-left: 4px solid var(--f1-red);
+            padding-left: 15px;
+            margin: 40px 0 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Frame Styling */
+        .frame-wrapper {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #333;
+        }
+
+        .photo-frame {
+            background: #fff; /* Border of the frame */
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* F1 Theme Accents */
+            border-bottom: 15px solid var(--f1-red);
+        }
+
+        /* 5 Landscape Frames */
+        .landscape { width: 300px; height: 200px; flex-direction: row; }
+        .landscape .slot { width: 140px; height: 100%; }
+
+        /* 5 Portrait Frames */
+        .portrait { width: 240px; height: 320px; flex-direction: column; }
+        .portrait .slot { width: 100%; height: 145px; }
+
+        .slot {
+            background: #eee;
+            border: 1px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slot::after {
+            content: '+';
+            color: #ccc;
+            font-size: 24px;
+            position: absolute;
+        }
+
+        .slot.has-image::after { display: none; }
+
+        .download-btn {
+            margin-top: 15px;
+            background: transparent;
+            color: var(--text-white);
+            border: 1px solid var(--f1-red);
+            padding: 8px 20px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+            font-size: 12px;
+        }
+
+        .download-btn:hover {
+            background: var(--f1-red);
+            box-shadow: 0 0 15px var(--f1-red);
+        }
+
         input[type="file"] { display: none; }
-
-        .frame-selector { display: flex; overflow-x: auto; gap: 10px; padding: 10px; margin-top: 20px; border: 1px solid #ddd; border-radius: 10px; }
-        .frame-item { width: 80px; height: 100px; object-fit: contain; cursor: pointer; border: 2px solid transparent; }
-        .frame-item.active { border-color: var(--f1-red); }
-
-        video { display: none; } /* ซ่อนกล้องตอนไม่ได้ใช้ */
+        
+        .frame-label {
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: var(--f1-red);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🏎️ F1 Photo Frame</h1>
-    
-    <div id="canvas-container">
-        <canvas id="photoCanvas"></canvas>
-    </div>
+    <h1>F1 Photo Frame Station</h1>
+    <p class="subtitle">Upload your photos to the Grand Prix collection</p>
 
-    <div class="frame-selector" id="frameSelector">
-        </div>
+    <h2 class="section-title">LANDSCAPE SERIES (5 Frames)</h2>
+    <div class="grid-container" id="landscape-container"></div>
 
-    <div class="controls">
-        <label for="upload-1">📸 อัปโหลดรูปช่องที่ 1</label>
-        <input type="file" id="upload-1" accept="image/*" onchange="handleImage(event, 0)">
-        
-        <label for="upload-2">📸 อัปโหลดรูปช่องที่ 2</label>
-        <input type="file" id="upload-2" accept="image/*" onchange="handleImage(event, 1)">
-        
-        <button onclick="startCamera()">📷 เปิดกล้องถ่ายรูป</button>
-        <button onclick="downloadImage()" style="background: var(--f1-red);">🏎️ ดาวน์โหลดรูปภาพ</button>
-    </div>
+    <h2 class="section-title">PORTRAIT SERIES (5 Frames)</h2>
+    <div class="grid-container" id="portrait-container"></div>
 
-    <video id="video" width="640" height="480" autoplay></video>
-</div>
+    <script>
+        function createFrames(containerId, type, count) {
+            const container = document.getElementById(containerId);
+            for (let i = 1; i <= count; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'frame-wrapper';
+                
+                const label = document.createElement('div');
+                label.className = 'frame-label';
+                label.innerText = `FORMULA 1 EDITION - ${type.toUpperCase()} #${i}`;
 
-<script>
-    const canvas = document.getElementById('photoCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // ตั้งค่าขนาด Canvas (เช่น อัตราส่วนเฟรมการ์ดมาตรฐาน)
-    canvas.width = 800;
-    canvas.height = 1200;
+                const frame = document.createElement('div');
+                frame.className = `photo-frame ${type}`;
+                frame.id = `${type}-${i}`;
 
-    let userImages = [null, null]; // เก็บรูปภาพ 2 ช่อง
-    let currentFrame = new Image();
-    currentFrame.src = 'frames/frame1.png'; // ค่าเริ่มต้น
+                // Create 2 slots per frame
+                for (let j = 1; j <= 2; j++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.onclick = () => triggerUpload(type, i, j);
+                    slot.id = `img-${type}-${i}-${j}`;
+                    frame.appendChild(slot);
+                }
 
-    // ฟังก์ชันวาดภาพใหม่ทั้งหมด
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. วาดรูป User 2 รูปในตำแหน่งที่กำหนด (ปรับตัวเลข x, y, w, h ตามดีไซน์เฟรมของคุณ)
-        if(userImages[0]) ctx.drawImage(userImages[0], 50, 100, 340, 500); 
-        if(userImages[1]) ctx.drawImage(userImages[1], 410, 100, 340, 500);
+                const btn = document.createElement('button');
+                btn.className = 'download-btn';
+                btn.innerText = 'DOWNLOAD FRAME';
+                btn.onclick = () => downloadFrame(`${type}-${i}`);
 
-        // 2. วาดเฟรมทับด้านบน (เฟรมต้องเป็น PNG ใส)
-        ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
-    }
-
-    // ฟังก์ชันจัดการรูปที่อัปโหลด
-    function handleImage(e, index) {
-        const reader = new FileReader();
-        reader.onload = function(event){
-            const img = new Image();
-            img.onload = function(){
-                userImages[index] = img;
-                draw();
+                wrapper.appendChild(label);
+                wrapper.appendChild(frame);
+                wrapper.appendChild(btn);
+                container.appendChild(wrapper);
             }
-            img.src = event.target.result;
         }
-        reader.readAsDataURL(e.target.files[0]);
-    }
 
-    // ฟังก์ชันเปลี่ยนเฟรม
-    function selectFrame(index) {
-        currentFrame.src = `frames/frame${index}.png`;
-        currentFrame.onload = draw;
-    }
+        function triggerUpload(type, frameIdx, slotIdx) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        const slot = document.getElementById(`img-${type}-${frameIdx}-${slotIdx}`);
+                        slot.innerHTML = `<img src="${event.target.result}">`;
+                        slot.classList.add('has-image');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
 
-    // ฟังก์ชันดาวน์โหลด
-    function downloadImage() {
-        const link = document.createElement('a');
-        link.download = 'f1-photo-frame.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }
+        function downloadFrame(frameId) {
+            const frame = document.getElementById(frameId);
+            html2canvas(frame).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `f1-frame-${frameId}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
 
-    // สร้างปุ่มเลือกเฟรม 10 ปุ่มอัตโนมัติ
-    const selector = document.getElementById('frameSelector');
-    for(let i=1; i<=10; i++) {
-        let img = document.createElement('img');
-        img.src = `frames/frame${i}.png`;
-        img.className = 'frame-item';
-        img.onclick = () => selectFrame(i);
-        selector.appendChild(img);
-    }
-
-    // วาดเริ่มต้น
-    currentFrame.onload = draw;
-</script>
-
+        // Initialize 5 landscape and 5 portrait frames
+        createFrames('landscape-container', 'landscape', 5);
+        createFrames('portrait-container', 'portrait', 5);
+    </script>
 </body>
 </html>
